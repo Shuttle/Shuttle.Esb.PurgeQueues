@@ -11,7 +11,7 @@ The module will attach the `PurgeQueuesObserver` to the `OnAfterConfigure` event
 ## Configuration
 
 ```c#
-services.AddPurgeQueuesModule(builder => 
+services.AddPurgeQueues(builder => 
 {
 	builder.Options.Uris = new List<string>
 	{

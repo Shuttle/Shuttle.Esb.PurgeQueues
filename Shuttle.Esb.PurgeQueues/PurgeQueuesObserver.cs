@@ -1,10 +1,11 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using Shuttle.Core.Contract;
 using Shuttle.Core.Pipelines;
 
 namespace Shuttle.Esb.PurgeQueues
 {
-    public class PurgeQueuesObserver : IPipelineObserver<OnAfterConfigure>
+    public class PurgeQueuesObserver : IPipelineObserver<OnAfterCreatePhysicalQueues>
     {
         private readonly PurgeQueuesOptions _purgeQueuesOptions;
         private readonly IQueueService _queueService;
@@ -19,12 +20,19 @@ namespace Shuttle.Esb.PurgeQueues
             _queueService = queueService;
         }
 
-        public void Execute(OnAfterConfigure pipelineEvent)
+        public void Execute(OnAfterCreatePhysicalQueues pipelineEvent)
         {
             foreach (var uri in _purgeQueuesOptions.Uris)
             {
                 (_queueService.Get(uri) as IPurgeQueue)?.Purge();
             }
+        }
+
+        public async Task ExecuteAsync(OnAfterCreatePhysicalQueues pipelineEvent)
+        {
+            Execute(pipelineEvent);
+
+            await Task.CompletedTask;
         }
     }
 }

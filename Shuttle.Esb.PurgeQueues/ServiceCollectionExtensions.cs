@@ -26,7 +26,7 @@ namespace Shuttle.Esb.PurgeQueues
                 options.Uris = new List<string>(purgeQueuesBuilder.Options.Uris ?? Enumerable.Empty<string>());
             });
 
-            services.AddPipelineModule<PurgeQueuesHostedService>();
+            services.AddHostedService<PurgeQueuesHostedService>();
 
             return services;
         }

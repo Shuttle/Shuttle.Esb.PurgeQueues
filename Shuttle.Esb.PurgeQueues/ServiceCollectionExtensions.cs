@@ -1,34 +1,29 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Shuttle.Core.Contract;
-using Shuttle.Core.Pipelines;
 
-namespace Shuttle.Esb.PurgeQueues
+namespace Shuttle.Esb.PurgeQueues;
+
+public static class ServiceCollectionExtensions
 {
-    public static class ServiceCollectionExtensions
+    public static IServiceCollection AddPurgeQueues(this IServiceCollection services, Action<PurgeQueuesBuilder>? builder = null)
     {
-        public static IServiceCollection AddPurgeQueues(this IServiceCollection services, Action<PurgeQueuesBuilder> builder = null)
+        var purgeQueuesBuilder = new PurgeQueuesBuilder(Guard.AgainstNull(services));
+
+        builder?.Invoke(purgeQueuesBuilder);
+
+        services.TryAddSingleton<PurgeQueuesHostedService, PurgeQueuesHostedService>();
+        services.TryAddSingleton<PurgeQueuesObserver, PurgeQueuesObserver>();
+
+        services.AddOptions<PurgeQueuesOptions>().Configure(options =>
         {
-            Guard.AgainstNull(services, nameof(services));
+            options.Uris = new(purgeQueuesBuilder.Options.Uris);
+        });
 
-            var purgeQueuesBuilder = new PurgeQueuesBuilder(services);
+        services.AddHostedService<PurgeQueuesHostedService>();
 
-            builder?.Invoke(purgeQueuesBuilder);
-
-            services.TryAddSingleton<PurgeQueuesHostedService, PurgeQueuesHostedService>();
-            services.TryAddSingleton<PurgeQueuesObserver, PurgeQueuesObserver>();
-
-            services.AddOptions<PurgeQueuesOptions>().Configure(options =>
-            {
-                options.Uris = new List<string>(purgeQueuesBuilder.Options.Uris ?? Enumerable.Empty<string>());
-            });
-
-            services.AddHostedService<PurgeQueuesHostedService>();
-
-            return services;
-        }
+        return services;
     }
 }

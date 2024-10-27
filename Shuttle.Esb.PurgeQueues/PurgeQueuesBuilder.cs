@@ -2,24 +2,22 @@
 using Microsoft.Extensions.DependencyInjection;
 using Shuttle.Core.Contract;
 
-namespace Shuttle.Esb.PurgeQueues
+namespace Shuttle.Esb.PurgeQueues;
+
+public class PurgeQueuesBuilder
 {
-    public class PurgeQueuesBuilder
+    private PurgeQueuesOptions _purgeQueuesOptions = new();
+
+    public PurgeQueuesBuilder(IServiceCollection services)
     {
-        private PurgeQueuesOptions _purgeQueuesOptions = new PurgeQueuesOptions();
-        public IServiceCollection Services { get; }
-
-        public PurgeQueuesBuilder(IServiceCollection services)
-        {
-            Guard.AgainstNull(services, nameof(services));
-
-            Services = services;
-        }
-
-        public PurgeQueuesOptions Options
-        {
-            get => _purgeQueuesOptions;
-            set => _purgeQueuesOptions = value ?? throw new ArgumentNullException(nameof(value));
-        }
+        Services = Guard.AgainstNull(services);
     }
+
+    public PurgeQueuesOptions Options
+    {
+        get => _purgeQueuesOptions;
+        set => _purgeQueuesOptions = Guard.AgainstNull(value);
+    }
+
+    public IServiceCollection Services { get; }
 }

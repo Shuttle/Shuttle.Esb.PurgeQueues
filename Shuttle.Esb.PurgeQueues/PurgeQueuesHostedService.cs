@@ -41,6 +41,6 @@ public class PurgeQueuesHostedService : IHostedService
             return;
         }
 
-        e.Pipeline.RegisterObserver(_purgeQueuesObserver);
+        e.Pipeline.AddObserver(_purgeQueuesObserver);
     }
 }

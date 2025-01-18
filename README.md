@@ -27,7 +27,7 @@ The default JSON settings structure is as follows:
 {
   "Shuttle": {
     "Modules": {
-      "MessageForwarding": {
+      "PurgeQueues": {
         "Uris": [
           "scheme-a://configuration-name/queue-a",
           "scheme-b://configuration-name/queue-b"

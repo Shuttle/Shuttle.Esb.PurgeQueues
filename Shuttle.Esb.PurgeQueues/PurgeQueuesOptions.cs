@@ -6,5 +6,5 @@ public class PurgeQueuesOptions
 {
     public const string SectionName = "Shuttle:Modules:PurgeQueues";
 
-    public List<string> Uris { get; set; } = new();
+    public List<string> Uris { get; set; } = [];
 }

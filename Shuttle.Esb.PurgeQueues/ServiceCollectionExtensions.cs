@@ -2,6 +2,7 @@
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using Shuttle.Core.Contract;
 
 namespace Shuttle.Esb.PurgeQueues;
@@ -17,10 +18,7 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<PurgeQueuesHostedService, PurgeQueuesHostedService>();
         services.TryAddSingleton<PurgeQueuesObserver, PurgeQueuesObserver>();
 
-        services.AddOptions<PurgeQueuesOptions>().Configure(options =>
-        {
-            options.Uris = new(purgeQueuesBuilder.Options.Uris);
-        });
+        services.AddSingleton(Options.Create(purgeQueuesBuilder.Options));
 
         services.AddHostedService<PurgeQueuesHostedService>();
 

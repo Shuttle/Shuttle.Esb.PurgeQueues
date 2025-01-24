@@ -18,7 +18,10 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<PurgeQueuesHostedService, PurgeQueuesHostedService>();
         services.TryAddSingleton<PurgeQueuesObserver, PurgeQueuesObserver>();
 
-        services.AddSingleton(Options.Create(purgeQueuesBuilder.Options));
+        services.AddOptions<PurgeQueuesOptions>().Configure(options =>
+        {
+            options.Uris = new(purgeQueuesBuilder.Options.Uris);
+        });
 
         services.AddHostedService<PurgeQueuesHostedService>();
 

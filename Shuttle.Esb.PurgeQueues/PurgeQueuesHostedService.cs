@@ -5,43 +5,42 @@ using Microsoft.Extensions.Hosting;
 using Shuttle.Core.Contract;
 using Shuttle.Core.Pipelines;
 
-namespace Shuttle.Esb.PurgeQueues
+namespace Shuttle.Esb.PurgeQueues;
+
+public class PurgeQueuesHostedService : IHostedService
 {
-    public class PurgeQueuesHostedService : IHostedService
+    private readonly IPipelineFactory _pipelineFactory;
+    private readonly PurgeQueuesObserver _purgeQueuesObserver;
+    private readonly string _startupPipelineName = Guard.AgainstNull(typeof(StartupPipeline).FullName);
+
+    public PurgeQueuesHostedService(IPipelineFactory pipelineFactory, PurgeQueuesObserver purgeQueuesObserver)
     {
-        private readonly IPipelineFactory _pipelineFactory;
-        private readonly PurgeQueuesObserver _purgeQueuesObserver;
-        private readonly string _startupPipelineName = typeof (StartupPipeline).FullName;
+        _pipelineFactory = Guard.AgainstNull(pipelineFactory, nameof(pipelineFactory));
+        _purgeQueuesObserver = Guard.AgainstNull(purgeQueuesObserver, nameof(purgeQueuesObserver));
 
-        public PurgeQueuesHostedService(IPipelineFactory pipelineFactory, PurgeQueuesObserver purgeQueuesObserver)
+        _pipelineFactory.PipelineCreated += OnPipelineCreated;
+    }
+
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        await Task.CompletedTask;
+    }
+
+    public async Task StopAsync(CancellationToken cancellationToken)
+    {
+        _pipelineFactory.PipelineCreated += OnPipelineCreated;
+
+        await Task.CompletedTask;
+    }
+
+    private void OnPipelineCreated(object? sender, PipelineEventArgs e)
+    {
+        if (!(e.Pipeline.GetType().FullName ?? string.Empty)
+            .Equals(_startupPipelineName, StringComparison.InvariantCultureIgnoreCase))
         {
-            _pipelineFactory = Guard.AgainstNull(pipelineFactory, nameof(pipelineFactory));
-            _purgeQueuesObserver = Guard.AgainstNull(purgeQueuesObserver, nameof(purgeQueuesObserver));
-
-            _pipelineFactory.PipelineCreated += OnPipelineCreated;
+            return;
         }
 
-        private void OnPipelineCreated(object sender, PipelineEventArgs e)
-        {
-            if (!(e.Pipeline.GetType().FullName ?? string.Empty)
-                .Equals(_startupPipelineName, StringComparison.InvariantCultureIgnoreCase))
-            {
-                return;
-            }
-
-            e.Pipeline.RegisterObserver(_purgeQueuesObserver);
-        }
-
-        public async Task StartAsync(CancellationToken cancellationToken)
-        {
-            await Task.CompletedTask;
-        }
-
-        public async Task StopAsync(CancellationToken cancellationToken)
-        {
-            _pipelineFactory.PipelineCreated += OnPipelineCreated;
-
-            await Task.CompletedTask;
-        }
+        e.Pipeline.AddObserver(_purgeQueuesObserver);
     }
 }
